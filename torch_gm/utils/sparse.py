@@ -4,11 +4,11 @@ from torch.autograd import Function
 import numpy as np
 import scipy.sparse as ssp
 
-from sparse_torch import CSRMatrix3d, CSCMatrix3d
+from torch_gm.sparse_torch import CSRMatrix3d, CSCMatrix3d
 
 from torch.utils.cpp_extension import load
-bilinear_diag = load(name='bilinear_diag', sources=['extension/bilinear_diag/bilinear_diag.cpp',
-                                                    'extension/bilinear_diag/bilinear_diag_cuda.cu'],
+bilinear_diag = load(name='bilinear_diag', sources=['torch_gm/extension/bilinear_diag/bilinear_diag.cpp',
+                                                    'torch_gm/extension/bilinear_diag/bilinear_diag_cuda.cu'],
                      extra_include_paths=[
                          '/usr/include/python{}.{}/'.format(sys.version_info.major, sys.version_info.minor)]
                      )

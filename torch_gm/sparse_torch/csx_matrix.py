@@ -6,9 +6,9 @@ import scipy.sparse as ssp
 from torch.utils.cpp_extension import load
 
 sparse_dot = load(name='sparse_dot',
-                  sources=['extension/sparse_dot/sparse_dot.cpp',
-                           'extension/sparse_dot/csr_dot_csc_cuda.cu',
-                           'extension/sparse_dot/csr_dot_diag_cuda.cu'],
+                  sources=['torch_gm/extension/sparse_dot/sparse_dot.cpp',
+                           'torch_gm/extension/sparse_dot/csr_dot_csc_cuda.cu',
+                           'torch_gm/extension/sparse_dot/csr_dot_diag_cuda.cu'],
                   extra_include_paths=[
                       '/usr/include/python{}.{}/'.format(sys.version_info.major, sys.version_info.minor)]
 )
