@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "gm-torch"
+name = "torch_gm"
 version = "0.1.0"
 description = ""
 authors = ["Kento Doi <doi.kento@weblab.t.u-tokyo.ac.jp>"]
