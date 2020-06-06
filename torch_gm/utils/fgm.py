@@ -1,13 +1,15 @@
+import numpy as np
+
+import scipy.sparse as ssp
 import torch
 from torch import Tensor
 from torch.autograd import Function
-from utils.sparse import bilinear_diag_torch
-from sparse_torch import CSRMatrix3d, CSCMatrix3d
-import scipy.sparse as ssp
-import numpy as np
+from torch_gm.sparse_torch import CSCMatrix3d, CSRMatrix3d
+from torch_gm.utils.sparse import bilinear_diag_torch
 
 
-def construct_m(Me: Tensor, Mp: Tensor, KG: CSRMatrix3d, KH: CSCMatrix3d, KGt: CSRMatrix3d=None, KHt: CSCMatrix3d=None):
+def construct_m(Me: Tensor, Mp: Tensor, KG: CSRMatrix3d, KH: CSCMatrix3d,
+                KGt: CSRMatrix3d = None, KHt: CSCMatrix3d = None):
     """
     Construct full affinity matrix M with edge matrix Me, point matrix Mp and graph structures G1, H1, G2, H2
     :param Me: edge affinity matrix
@@ -79,7 +81,8 @@ class RebuildFGM(Function):
     Rebuild sparse affinity matrix in the formula of CVPR12's paper "Factorized Graph Matching"
     """
     @staticmethod
-    def forward(ctx, Me: Tensor, Mp: Tensor, K1: CSRMatrix3d, K2: CSCMatrix3d, K1t: CSRMatrix3d=None, K2t: CSCMatrix3d=None):
+    def forward(ctx, Me: Tensor, Mp: Tensor, K1: CSRMatrix3d, K2: CSCMatrix3d,
+                K1t: CSRMatrix3d = None, K2t: CSCMatrix3d = None):
         ctx.save_for_backward(Me, Mp)
         if K1t is not None and K2t is not None:
             ctx.K = K1t, K2t

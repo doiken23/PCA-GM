@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from utils.sparse import sbmm
+from gmn.utils.sparse import sbmm
 
 
 class PowerIteration(nn.Module):
@@ -13,6 +13,7 @@ class PowerIteration(nn.Module):
            (optional) initialization vector v0. If not specified, v0 will be initialized with all 1.
     Output: computed eigenvector v
     """
+
     def __init__(self, max_iter=50, stop_thresh=2e-7):
         super(PowerIteration, self).__init__()
         self.max_iter = max_iter

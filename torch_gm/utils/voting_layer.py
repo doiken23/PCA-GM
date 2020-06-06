@@ -14,6 +14,7 @@ class Voting(nn.Module):
            ground truth number of effective points in source image ns_gt
     Output: softmax matrix s
     """
+
     def __init__(self, alpha=200, pixel_thresh=None):
         super(Voting, self).__init__()
         self.alpha = alpha

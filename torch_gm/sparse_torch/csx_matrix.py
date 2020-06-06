@@ -1,8 +1,9 @@
 import sys
-import torch
-import numpy as np
-import scipy.sparse as ssp
 
+import numpy as np
+
+import scipy.sparse as ssp
+import torch
 from torch.utils.cpp_extension import load
 
 sparse_dot = load(name='sparse_dot',
@@ -11,7 +12,7 @@ sparse_dot = load(name='sparse_dot',
                            'torch_gm/extension/sparse_dot/csr_dot_diag_cuda.cu'],
                   extra_include_paths=[
                       '/usr/include/python{}.{}/'.format(sys.version_info.major, sys.version_info.minor)]
-)
+                  )
 
 
 class CSXMatrix3d:
@@ -62,28 +63,28 @@ class CSXMatrix3d:
             :param device: device. Optional
             :return: indices(Tensor), indptr(Tensor), data(Tensor), shape(tuple)
             """
-            if type(ind) == torch.Tensor and device is None:
+            if isinstance(ind, torch.Tensor) and device is None:
                 device = ind.device
 
-            if type(ind) is torch.Tensor:
+            if isinstance(ind, torch.Tensor):
                 indices_t = ind.to(torch.int64).to(device)
             else:
                 indices_t = torch.tensor(ind, dtype=torch.int64, device=device)
-            if type(indp) is torch.Tensor:
+            if isinstance(indp, torch.Tensor):
                 indptr_t = indp.to(torch.int64).to(device)
             else:
                 indptr_t = torch.tensor(indp, dtype=torch.int64, device=device)
-            if type(data) is torch.Tensor:
+            if isinstance(data, torch.Tensor):
                 data_t = data.to(dtype=data.dtype).to(device)
             else:
                 data_t = torch.tensor(data, device=device)
 
             return indices_t, indptr_t, data_t, tuple(shape)
 
-        if type(inp) == list and isinstance(inp[0], ssp.spmatrix):
+        if isinstance(inp, list) and isinstance(inp[0], ssp.spmatrix):
             self.indices, self.indptr, self.data, self.shape = from_ssp(inp, shape, device)
 
-        elif type(inp) == list:
+        elif isinstance(inp, list):
             self.indices, self.indptr, self.data, self.shape = from_tensors(*inp, shape, device)
 
         else:
@@ -116,7 +117,8 @@ class CSXMatrix3d:
             indices = torch.cat(indices)
             indptr = torch.cat(indptr)
             data = torch.cat(data)
-            return self.__class__([indices, indptr, data], shape=[len(batch_iter)] + list(self.shape[1:3]))
+            return self.__class__([indices, indptr, data], shape=[
+                                  len(batch_iter)] + list(self.shape[1:3]))
         else:
             raise ValueError('Index type {} not supported.'.format(type(item)))
 
@@ -141,7 +143,8 @@ class CSXMatrix3d:
         :return: a new instance
         """
         if isinstance(tgt, torch.device):
-            return self.__class__([x.to(tgt) for x in [self.indices, self.indptr, self.data]], self.shape)
+            return self.__class__([x.to(tgt)
+                                   for x in [self.indices, self.indptr, self.data]], self.shape)
         elif isinstance(tgt, torch.dtype):
             return self.__class__([self.indices, self.indptr, self.data.to(tgt)], self.shape)
         else:
@@ -152,7 +155,8 @@ class CSXMatrix3d:
         Compatible to torch.Tensor.cuda()
         :return: a new instance on CUDA
         """
-        return self.__class__([x.cuda() for x in [self.indices, self.indptr, self.data]], self.shape)
+        return self.__class__([x.cuda()
+                               for x in [self.indices, self.indptr, self.data]], self.shape)
 
     def cpu(self):
         """
@@ -212,7 +216,7 @@ class CSXMatrix3d:
         :param item: batch index
         :return: (indices, indptr, data)
         """
-        if type(item) != int:
+        if not isinstance(item, int):
             raise IndexError('Only int indices is currently supported.')
 
         if self.sptype == 'csr':
@@ -240,7 +244,7 @@ class CSXMatrix3d:
 
 class CSCMatrix3d(CSXMatrix3d):
     def __init__(self, inp, shape=None, device=None):
-        if type(inp) == list and isinstance(inp[0], ssp.spmatrix):
+        if isinstance(inp, list) and isinstance(inp[0], ssp.spmatrix):
             max_shape = [0, 0]
             for s in inp:
                 max_shape[0] = max(max_shape[0], s.shape[0])
@@ -252,7 +256,7 @@ class CSCMatrix3d(CSXMatrix3d):
                 assert shape[1] <= max_shape[0]
                 assert shape[2] <= max_shape[1]
 
-        elif type(inp) == list:
+        elif isinstance(inp, list):
             assert shape is not None
             batch = shape[0]
             row = _max(inp[0])
@@ -292,7 +296,7 @@ class CSCMatrix3d(CSXMatrix3d):
 
 class CSRMatrix3d(CSXMatrix3d):
     def __init__(self, inp, shape=None, device=None):
-        if type(inp) == list and isinstance(inp[0], ssp.spmatrix):
+        if isinstance(inp, list) and isinstance(inp[0], ssp.spmatrix):
             max_shape = [0, 0]
             for s in inp:
                 max_shape[0] = max(max_shape[0], s.shape[0])
@@ -304,7 +308,7 @@ class CSRMatrix3d(CSXMatrix3d):
                 assert shape[1] <= max_shape[0]
                 assert shape[2] <= max_shape[1]
 
-        elif type(inp) == list:
+        elif isinstance(inp, list):
             assert shape is not None
             batch = shape[0]
             row = (len(inp[1]) - 1) // batch
@@ -383,8 +387,8 @@ def dot(csr: CSRMatrix3d, csc: CSCMatrix3d, dense=False):
     :return: dot result in new csr matrix (dense=False) or
              dot result in dense matrix (dense=True)
     """
-    assert type(csr) == CSRMatrix3d
-    assert type(csc) == CSCMatrix3d
+    assert isinstance(csr, CSRMatrix3d)
+    assert isinstance(csc, CSCMatrix3d)
     assert csr.shape[0] == csc.shape[0], 'Batch size mismatch'
     batch_num = csr.shape[0]
     assert csr.shape[2] == csc.shape[1], 'Matrix size mismatch'
@@ -400,7 +404,8 @@ def dot(csr: CSRMatrix3d, csc: CSCMatrix3d, dense=False):
     else:
         if not dense:
             raise RuntimeWarning('Sparse dot product result in CUDA is not implemented.')
-        ret = sparse_dot.csr_dot_csc_dense_cuda(*csr.as_list(), *csc.as_list(), batch_num, out_h, out_w)
+        ret = sparse_dot.csr_dot_csc_dense_cuda(
+            *csr.as_list(), *csc.as_list(), batch_num, out_h, out_w)
     return ret
 
 
@@ -422,7 +427,7 @@ def concatenate(*mats: CSXMatrix3d, device=None):
     indptr = []
     data = []
     for mat in mats:
-        assert type(mat) == mat_type, 'Matrix type inconsistent'
+        assert isinstance(mat, mat_type), 'Matrix type inconsistent'
         assert mat.shape[1] == mat_h, 'Matrix shape inconsistent in dimension 1'
         assert mat.shape[2] == mat_w, 'Matrix shape inconsistent in dimension 2'
         indices.append(mat.indices.clone().to(device))
@@ -442,9 +447,9 @@ def concatenate(*mats: CSXMatrix3d, device=None):
 
 
 def _max(inp, *args, **kwargs):
-    if type(inp) == np.ndarray:
+    if isinstance(inp, np.ndarray):
         return np.max(inp, *args, **kwargs)
-    elif type(inp) == torch.Tensor:
+    elif isinstance(inp, torch.Tensor):
         return torch.max(inp, *args, **kwargs)
     else:
         raise ValueError('Data type {} not understood.'.format(type(inp)))

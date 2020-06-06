@@ -1,8 +1,9 @@
+import math
+
 import torch
 import torch.nn as nn
-from torch.nn.parameter import Parameter
 from torch import Tensor
-import math
+from torch.nn.parameter import Parameter
 
 
 class Affinity(nn.Module):
@@ -19,6 +20,7 @@ class Affinity(nn.Module):
                                     [Lambda2, Lambda1]]
             where Lambda1, Lambda2 > 0
     """
+
     def __init__(self, d):
         super(Affinity, self).__init__()
         self.d = d

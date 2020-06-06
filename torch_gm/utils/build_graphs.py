@@ -1,13 +1,15 @@
-import torch
-from torch import Tensor
-from scipy.spatial import Delaunay
-from scipy.spatial.qhull import QhullError
-
 import itertools
+
 import numpy as np
 
+import torch
+from scipy.spatial import Delaunay
+from scipy.spatial.qhull import QhullError
+from torch import Tensor
 
-def build_graphs(P_np: np.ndarray, n: int, n_pad: int=None, edge_pad: int=None, stg: str='fc'):
+
+def build_graphs(P_np: np.ndarray, n: int, n_pad: int = None,
+                 edge_pad: int = None, stg: str = 'fc'):
     """
     Build graph matrix G,H from point set P. This function supports only cpu operations in numpy.
     G, H is constructed from adjacency matrix A: A = G * H^T
@@ -28,7 +30,7 @@ def build_graphs(P_np: np.ndarray, n: int, n_pad: int=None, edge_pad: int=None, 
     if stg == 'tri':
         A = delaunay_triangulate(P_np[0:n, :])
     elif stg == 'near':
-        A = fully_connect(P_np[0:n, :], thre=0.5*256)
+        A = fully_connect(P_np[0:n, :], thre=0.5 * 256)
     else:
         A = fully_connect(P_np[0:n, :])
     edge_num = int(np.sum(A, axis=(0, 1)))
@@ -114,6 +116,6 @@ def reshape_edge_feature(F: Tensor, G: Tensor, H: Tensor, device=None):
     point_num, edge_num = G.shape[1:3]
     X = torch.zeros(batch_num, 2 * feat_dim, edge_num, dtype=torch.float32, device=device)
     X[:, 0:feat_dim, :] = torch.matmul(F, G)
-    X[:, feat_dim:2*feat_dim, :] = torch.matmul(F, H)
+    X[:, feat_dim:2 * feat_dim, :] = torch.matmul(F, H)
 
     return X

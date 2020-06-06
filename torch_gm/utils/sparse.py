@@ -1,12 +1,13 @@
 import sys
+
+import numpy as np
+
+import scipy.sparse as ssp
 import torch
 from torch.autograd import Function
-import numpy as np
-import scipy.sparse as ssp
-
-from torch_gm.sparse_torch import CSRMatrix3d, CSCMatrix3d
-
 from torch.utils.cpp_extension import load
+from torch_gm.sparse_torch import CSCMatrix3d, CSRMatrix3d
+
 bilinear_diag = load(name='bilinear_diag', sources=['torch_gm/extension/bilinear_diag/bilinear_diag.cpp',
                                                     'torch_gm/extension/bilinear_diag/bilinear_diag_cuda.cu'],
                      extra_include_paths=[
@@ -48,9 +49,9 @@ def sdsbmm(t1, t2):
     Perform bmm for sparse x dense -> sparse.
     This is a wrapper function and does not support gradient.
     """
-    assert (type(t1) == list) != (type(t2) == list) or t1.is_sparse != t2.is_sparse, \
+    assert (isinstance(t1, list)) != (isinstance(t2, list)) or t1.is_sparse != t2.is_sparse, \
         't1, t2 must be one sparse and one dense!'
-    if type(t1) == list or t1.is_sparse:
+    if isinstance(t1, list) or t1.is_sparse:
         result = sds_bmm_torch(t1, t2)
     else:
         result = sds_bmm_torch(t2.transpose(1, 2), t1.transpose(1, 2)).transpose(1, 2)
@@ -62,9 +63,9 @@ def sssbmm_diag(m1, m2):
     Perform bmm and diagonal for sparse x sparse -> sparse.
     This is a wrapper function and does not support gradient.
     """
-    if (type(m1) == list and type(m1[0]) == torch.Tensor) or type(m1) == torch.Tensor:
+    if (isinstance(m1, list) and isinstance(m1[0], torch.Tensor)) or isinstance(m1, torch.Tensor):
         m1 = torch2ssp(m1)
-    if (type(m2) == list and type(m2[0]) == torch.Tensor) or type(m2) == torch.Tensor:
+    if (isinstance(m2, list) and isinstance(m2[0], torch.Tensor)) or isinstance(m2, torch.Tensor):
         m2 = torch2ssp(m2)
     return sss_bmm_diag_spp(m1, m2)
 
@@ -125,7 +126,7 @@ def sdd_bmm_torch(s_t1, d_t2):
     #outp = torch.empty(batch_num, x, y, dtype=s_t1.dtype, device=device)
     for b in range(batch_num):
         _s_t1 = get_batches(s_t1, b)
-        outp = torch.mm(_s_t1, d_t2[b, :, :])#, out=outp[b, :, :])
+        outp = torch.mm(_s_t1, d_t2[b, :, :])  # , out=outp[b, :, :])
     return outp.view(1, x, y)
 
 
@@ -160,7 +161,7 @@ def sds_bmm_torch(s_t1, d_t2):
     :return: bmm result in sparse (in list, representing batches)
     """
     device = d_t2.device
-    assert type(s_t1) == list
+    assert isinstance(s_t1, list)
     batch_num = len(s_t1)
 
     assert batch_num == d_t2.shape[0], 'Batch size mismatch.'
@@ -217,10 +218,12 @@ def dense_to_sparse(d_t):
 
     indices = torch.nonzero(d_t)
     if len(indices.shape) == 0:  # if all elements are zeros
-        return torch.sparse_coo_tensor([], [], d_t.shape, dtype=dtype, device=device, requires_grad=req_grad)
+        return torch.sparse_coo_tensor([], [], d_t.shape, dtype=dtype,
+                                       device=device, requires_grad=req_grad)
     indices = indices.t()
     values = d_t[tuple(indices[i] for i in range(indices.shape[0]))]
-    return torch.sparse_coo_tensor(indices, values, d_t.size(), dtype=dtype, device=device, requires_grad=req_grad)
+    return torch.sparse_coo_tensor(indices, values, d_t.size(
+    ), dtype=dtype, device=device, requires_grad=req_grad)
 
 
 def get_batches(s_t, b=None, device=None):
@@ -240,7 +243,8 @@ def get_batches(s_t, b=None, device=None):
         idx = (coo[0, :] == b).nonzero()
         _coo = coo[1:3, idx].view(2, -1)
         _data = data[idx].view(-1)
-        outp = torch.sparse_coo_tensor(_coo, _data, s_t.shape[1:3], dtype=_data.dtype, device=device)
+        outp = torch.sparse_coo_tensor(
+            _coo, _data, s_t.shape[1:3], dtype=_data.dtype, device=device)
     else:
         batch_num = s_t.shape[0]
         outp = []
@@ -248,7 +252,8 @@ def get_batches(s_t, b=None, device=None):
             idx = (coo[0, :] == b).nonzero()
             _coo = coo[1:3, idx].view(2, -1)
             _data = data[idx].view(-1)
-            outp.append(torch.sparse_coo_tensor(_coo, _data, s_t.shape[1:3], dtype=_data.dtype, device=device))
+            outp.append(torch.sparse_coo_tensor(
+                _coo, _data, s_t.shape[1:3], dtype=_data.dtype, device=device))
     return outp
 
 
@@ -309,9 +314,9 @@ def sss_bmm_diag_spp(s_m1, s_m2):
     :param s_m2: sparse matrix 2
     :return: result in sparse vector
     """
-    if type(s_m1) != list:
+    if not isinstance(s_m1, list):
         s_m1 = [s_m1]
-    if type(s_m2) != list:
+    if not isinstance(s_m2, list):
         s_m2 = [s_m2]
     assert len(s_m1) == len(s_m2), 'Batch size mismatch.'
 
@@ -342,7 +347,7 @@ def ssp2torch(M, batch='dim', dtype=torch.float32, device=None):
     """
     assert batch in ('list', 'dim')
 
-    if type(M) != list:
+    if not isinstance(M, list):
         M = [M]
     batch_num = len(M)
 
@@ -365,7 +370,15 @@ def ssp2torch(M, batch='dim', dtype=torch.float32, device=None):
             data = np.append(data, _M.data)
 
         coo = np.array([batch, row, col])
-        outp = torch.sparse_coo_tensor(coo, data, torch.Size([batch_num] + list(_M.shape)), dtype=dtype, device=device)
+        outp = torch.sparse_coo_tensor(
+            coo,
+            data,
+            torch.Size(
+                [batch_num] +
+                list(
+                    _M.shape)),
+            dtype=dtype,
+            device=device)
 
     return outp
 
@@ -377,7 +390,7 @@ def torch2ssp(M):
     :param M: input torch sparse matrix
     :return: output scipy.sparse matrix
     """
-    if type(M) == list:
+    if isinstance(M, list):
         batch_num = len(M)
         outp = []
         for b in range(batch_num):
@@ -429,12 +442,11 @@ def recover_ssp(t_dict):
 
 
 if __name__ == '__main__':
-    t = torch.tensor([[[ 1,  2,  3,  4],
+    t = torch.tensor([[[1, 2, 3, 4],
                        [11, 22, 33, 44]]])
     t = dense_to_sparse(t)
     s = slicing_torch(t, torch.tensor((0, 0, 1)), preserve_dim=True)
     print(s.to_dense())
-
 
     from torch.autograd import gradcheck
     input = (dense_to_sparse(torch.randn(1, 20, 30, dtype=torch.double, requires_grad=True)),

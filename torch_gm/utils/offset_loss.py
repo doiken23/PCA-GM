@@ -14,6 +14,7 @@ class RobustLoss(nn.Module):
            (optional)dummy node mask mask
     Output: loss value
     """
+
     def __init__(self, epsilon=1e-5, norm=None):
         super(RobustLoss, self).__init__()
         self.epsilon = epsilon

@@ -18,6 +18,7 @@ class Displacement(nn.Module):
     Output: displacement matrix d
             mask for dummy nodes grad_mask. If ns_gt=None, it will not be calculated and None is returned.
     """
+
     def __init__(self):
         super(Displacement, self).__init__()
 

@@ -19,7 +19,7 @@ def feature_align(raw_feature: Tensor, P: Tensor, ns_t: Tensor, ori_size: tuple,
     channel_num = raw_feature.shape[1]
     n_max = P.shape[1]
     #n_max = 0
-    #for idx in range(batch_num):
+    # for idx in range(batch_num):
     #    n_max = max(ns_t[idx], n_max)
 
     ori_size = torch.tensor(ori_size, dtype=torch.float32, device=device)
@@ -68,8 +68,8 @@ def bilinear_interpolate_torch(im: Tensor, x: Tensor, y: Tensor, out=None, devic
     """
     if device is None:
         device = im.device
-    x = x.to(torch.float32).to(device)#torch.tensor(x, dtype=torch.float32, device=device)
-    y = y.to(torch.float32).to(device)#torch.tensor(y, dtype=torch.float32, device=device)
+    x = x.to(torch.float32).to(device)  # torch.tensor(x, dtype=torch.float32, device=device)
+    y = y.to(torch.float32).to(device)  # torch.tensor(y, dtype=torch.float32, device=device)
 
     x0 = torch.floor(x)
     x1 = x0 + 1
@@ -81,10 +81,10 @@ def bilinear_interpolate_torch(im: Tensor, x: Tensor, y: Tensor, out=None, devic
     y0 = torch.clamp(y0, 0, im.shape[1] - 1)
     y1 = torch.clamp(y1, 0, im.shape[1] - 1)
 
-    x0 = x0.to(torch.int32).to(device)#torch.tensor(x0, dtype=torch.int32, device=device)
-    x1 = x1.to(torch.int32).to(device)#torch.tensor(x1, dtype=torch.int32, device=device)
-    y0 = y0.to(torch.int32).to(device)#torch.tensor(y0, dtype=torch.int32, device=device)
-    y1 = y1.to(torch.int32).to(device)#torch.tensor(y1, dtype=torch.int32, device=device)
+    x0 = x0.to(torch.int32).to(device)  # torch.tensor(x0, dtype=torch.int32, device=device)
+    x1 = x1.to(torch.int32).to(device)  # torch.tensor(x1, dtype=torch.int32, device=device)
+    y0 = y0.to(torch.int32).to(device)  # torch.tensor(y0, dtype=torch.int32, device=device)
+    y1 = y1.to(torch.int32).to(device)  # torch.tensor(y1, dtype=torch.int32, device=device)
 
     Ia = im[:, y0, x0]
     Ib = im[:, y1, x0]
@@ -103,10 +103,10 @@ def bilinear_interpolate_torch(im: Tensor, x: Tensor, y: Tensor, out=None, devic
         else:
             y1 += 1
 
-    x0 = x0.to(torch.float32).to(device)#torch.tensor(x0, dtype=torch.float32, device=device)
-    x1 = x1.to(torch.float32).to(device)#torch.tensor(x1, dtype=torch.float32, device=device)
-    y0 = y0.to(torch.float32).to(device)#torch.tensor(y0, dtype=torch.float32, device=device)
-    y1 = y1.to(torch.float32).to(device)#torch.tensor(y1, dtype=torch.float32, device=device)
+    x0 = x0.to(torch.float32).to(device)  # torch.tensor(x0, dtype=torch.float32, device=device)
+    x1 = x1.to(torch.float32).to(device)  # torch.tensor(x1, dtype=torch.float32, device=device)
+    y0 = y0.to(torch.float32).to(device)  # torch.tensor(y0, dtype=torch.float32, device=device)
+    y1 = y1.to(torch.float32).to(device)  # torch.tensor(y1, dtype=torch.float32, device=device)
 
     wa = (x1 - x) * (y1 - y)
     wb = (x1 - x) * (y - y0)

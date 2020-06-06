@@ -7,6 +7,7 @@ class CrossEntropyLoss(nn.Module):
     """
     Cross entropy loss between two permutations.
     """
+
     def __init__(self):
         super(CrossEntropyLoss, self).__init__()
 

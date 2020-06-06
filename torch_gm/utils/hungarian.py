@@ -1,6 +1,7 @@
-import torch
-import scipy.optimize as opt
 import numpy as np
+
+import scipy.optimize as opt
+import torch
 
 
 def hungarian(s: torch.Tensor, n1=None, n2=None):

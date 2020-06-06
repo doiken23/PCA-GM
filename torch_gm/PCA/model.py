@@ -1,17 +1,11 @@
 import torch
 import torch.nn as nn
-
-from utils.sinkhorn import Sinkhorn
-from utils.voting_layer import Voting
-from GMN.displacement_layer import Displacement
-from utils.feature_align import feature_align
-from PCA.gconv import Siamese_Gconv
-from PCA.affinity_layer import Affinity
-
-from utils.config import cfg
-
-import utils.backbone
-CNN = eval('utils.backbone.{}'.format(cfg.BACKBONE))
+from torch_gm.GMN.displacement_layer import Displacement
+from torch_gm.PCA.affinity_layer import Affinity
+from torch_gm.PCA.gconv import Siamese_Gconv
+from torch_gm.utils.feature_align import feature_align
+from torch_gm.utils.sinkhorn import Sinkhorn
+from torch_gm.utils.voting_layer import Voting
 
 
 class Net(CNN):
@@ -20,7 +14,11 @@ class Net(CNN):
         self.bi_stochastic = Sinkhorn(max_iter=cfg.PCA.BS_ITER_NUM, epsilon=cfg.PCA.BS_EPSILON)
         self.voting_layer = Voting(alpha=cfg.PCA.VOTING_ALPHA)
         self.displacement_layer = Displacement()
-        self.l2norm = nn.LocalResponseNorm(cfg.PCA.FEATURE_CHANNEL * 2, alpha=cfg.PCA.FEATURE_CHANNEL * 2, beta=0.5, k=0)
+        self.l2norm = nn.LocalResponseNorm(
+            cfg.PCA.FEATURE_CHANNEL * 2,
+            alpha=cfg.PCA.FEATURE_CHANNEL * 2,
+            beta=0.5,
+            k=0)
         self.gnn_layer = cfg.PCA.GNN_LAYER
         for i in range(self.gnn_layer):
             if i == 0:
@@ -30,9 +28,12 @@ class Net(CNN):
             self.add_module('gnn_layer_{}'.format(i), gnn_layer)
             self.add_module('affinity_{}'.format(i), Affinity(cfg.PCA.GNN_FEAT))
             if i == self.gnn_layer - 2:  # only second last layer will have cross-graph module
-                self.add_module('cross_graph_{}'.format(i), nn.Linear(cfg.PCA.GNN_FEAT * 2, cfg.PCA.GNN_FEAT))
+                self.add_module(
+                    'cross_graph_{}'.format(i), nn.Linear(
+                        cfg.PCA.GNN_FEAT * 2, cfg.PCA.GNN_FEAT))
 
-    def forward(self, src, tgt, P_src, P_tgt, G_src, G_tgt, H_src, H_tgt, ns_src, ns_tgt, K_G, K_H, type='img'):
+    def forward(self, src, tgt, P_src, P_tgt, G_src, G_tgt, H_src,
+                H_tgt, ns_src, ns_tgt, K_G, K_H, type='img'):
         if type == 'img' or type == 'image':
             # extract feature
             src_node = self.node_layers(src)
@@ -63,7 +64,11 @@ class Net(CNN):
         A_src = torch.bmm(G_src, H_src.transpose(1, 2))
         A_tgt = torch.bmm(G_tgt, H_tgt.transpose(1, 2))
 
-        emb1, emb2 = torch.cat((U_src, F_src), dim=1).transpose(1, 2), torch.cat((U_tgt, F_tgt), dim=1).transpose(1, 2)
+        emb1, emb2 = torch.cat(
+            (U_src, F_src), dim=1).transpose(
+            1, 2), torch.cat(
+            (U_tgt, F_tgt), dim=1).transpose(
+                1, 2)
 
         for i in range(self.gnn_layer):
             gnn_layer = getattr(self, 'gnn_layer_{}'.format(i))
@@ -76,7 +81,15 @@ class Net(CNN):
             if i == self.gnn_layer - 2:
                 cross_graph = getattr(self, 'cross_graph_{}'.format(i))
                 emb1_new = cross_graph(torch.cat((emb1, torch.bmm(s, emb2)), dim=-1))
-                emb2_new = cross_graph(torch.cat((emb2, torch.bmm(s.transpose(1, 2), emb1)), dim=-1))
+                emb2_new = cross_graph(
+                    torch.cat(
+                        (emb2,
+                         torch.bmm(
+                             s.transpose(
+                                 1,
+                                 2),
+                             emb1)),
+                        dim=-1))
                 emb1 = emb1_new
                 emb2 = emb2_new
 

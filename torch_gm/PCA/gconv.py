@@ -1,12 +1,14 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 import torch.nn.functional as F
+from torch.autograd import Variable
+
 
 class Gconv(nn.Module):
     """
     (Intra) graph convolution operation, with single convolutional layer
     """
+
     def __init__(self, in_features, out_features):
         super(Gconv, self).__init__()
         self.num_inputs = in_features
@@ -20,14 +22,16 @@ class Gconv(nn.Module):
 
         ax = self.a_fc(x)
         ux = self.u_fc(x)
-        x = torch.bmm(A, F.relu(ax)) + F.relu(ux) # has size (bs, N, num_outputs)
+        x = torch.bmm(A, F.relu(ax)) + F.relu(ux)  # has size (bs, N, num_outputs)
 
         return x
+
 
 class Siamese_Gconv(nn.Module):
     """
     Perform graph convolution on two input graphs (g1, g2)
     """
+
     def __init__(self, in_features, num_features):
         super(Siamese_Gconv, self).__init__()
         self.gconv = Gconv(in_features, num_features)
