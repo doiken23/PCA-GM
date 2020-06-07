@@ -1,9 +1,9 @@
 import numpy as np
-
 import scipy.sparse as ssp
 import torch
 from torch import Tensor
 from torch.autograd import Function
+
 from torch_gm.sparse_torch import CSCMatrix3d, CSRMatrix3d
 from torch_gm.utils.sparse import bilinear_diag_torch
 

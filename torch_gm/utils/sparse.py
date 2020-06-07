@@ -1,10 +1,10 @@
 import sys
 
 import numpy as np
-
 import scipy.sparse as ssp
 import torch
 from torch.autograd import Function
+
 from torch.utils.cpp_extension import load
 from torch_gm.sparse_torch import CSCMatrix3d, CSRMatrix3d
 

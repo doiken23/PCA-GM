@@ -1,11 +1,11 @@
 import torch.nn as nn
-from gmn.affinity_layer import Affinity
-from gmn.displacement_layer import Displacement
-from gmn.power_iteration import PowerIteration
-from utils.build_graphs import reshape_edge_feature
-from utils.fgm import construct_m
-from utils.sinkhorn import Sinkhorn
-from utils.voting_layer import Voting
+from torch_gm.gmn.affinity_layer import Affinity
+from torch_gm.gmn.displacement_layer import Displacement
+from torch_gm.gmn.power_iteration import PowerIteration
+from torch_gm.utils.build_graphs import reshape_edge_feature
+from torch_gm.utils.fgm import construct_m
+from torch_gm.utils.sinkhorn import Sinkhorn
+from torch_gm.utils.voting_layer import Voting
 
 
 class GMNLayer(nn.Module):
