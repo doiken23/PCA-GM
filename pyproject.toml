@@ -6,8 +6,6 @@ authors = ["Kento Doi <doi.kento@weblab.t.u-tokyo.ac.jp>"]
 
 [tool.poetry.dependencies]
 python = "^3.6.5"
-torch = "latest"
-torchvision = "latest"
 numpy = ""
 pillow = ""
 scipy = ""
