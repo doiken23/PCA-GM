@@ -11,7 +11,7 @@ from torch_gm.utils.voting_layer import Voting
 class GMNLayer(nn.Module):
     def __init__(
             self, node_feature_dim,
-            pi_max_iter, pi_stop_thresh, sh_max_iter, sh_epsilon, v_alpha,
+            pi_max_iter=50, pi_stop_thresh=2e-7, sh_max_iter=10, sh_epsilon=1e-10, v_alpha=2e8,
             voting=True, bi_stochastic=True):
         super(GMNLayer, self).__init__()
 
@@ -31,9 +31,8 @@ class GMNLayer(nn.Module):
         )
 
     def forward(
-            self, U_src, U_tgt,
-            F_src, F_tgt, G_src, G_tgt, H_src, H_tgt, ns_src, ns_tgt, K_G, K_H,
-            P_src=None, P_tgt=None):
+            self, U_src, U_tgt, F_src, F_tgt,
+            G_src, G_tgt, H_src, H_tgt, ns_src, ns_tgt, K_G, K_H, P_src=None, P_tgt=None):
         """
 
         Args:
